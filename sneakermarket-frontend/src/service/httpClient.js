@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCsrfToken, resetCsrfToken } from './csrfService'
 
 // Vite 的自訂環境變數必須以 VITE_ 開頭。
 // 若沒有另外建立 .env.local，預設直接連到目前酷客 Kicks Backend。
@@ -14,15 +15,29 @@ const httpClient = axios.create({
   withCredentials: true,
 })
 
-// 預留：會員組完成 JWT 後，可在這裡統一加入 Authorization Header。
-httpClient.interceptors.request.use((config) => {
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
+httpClient.interceptors.request.use(async (config) => {
+  const method = (config.method || 'GET').toUpperCase()
+
+  if (!SAFE_METHODS.has(method)) {
+    const csrf = await getCsrfToken()
+    config.headers = config.headers || {}
+    config.headers[csrf.headerName] = csrf.token
+  }
+
   return config
 })
 
 // 統一先把錯誤原樣交給各 View / Service 處理。
 httpClient.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error),
+  (error) => {
+    if (error.response?.status === 403) {
+      resetCsrfToken()
+    }
+    return Promise.reject(error)
+  },
 )
 
 export default httpClient

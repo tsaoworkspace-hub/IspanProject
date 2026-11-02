@@ -1,6 +1,20 @@
-const AUTH_API_BASE_URL = "http://localhost:8080/api/auth";
+import { getCsrfToken, resetCsrfToken } from "./csrfService";
 
-const MEMBER_API_BASE_URL = "http://localhost:8080/api/members";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api"
+).replace(/\/$/, "");
+
+const AUTH_API_BASE_URL = `${API_BASE_URL}/auth`;
+
+const MEMBER_API_BASE_URL = `${API_BASE_URL}/members`;
+
+async function withCsrfHeader(headers = {}) {
+  const csrf = await getCsrfToken();
+  return {
+    ...headers,
+    [csrf.headerName]: csrf.token,
+  };
+}
 
 
 async function readErrorResponse(response, defaultMessage) {
@@ -39,9 +53,9 @@ export async function login(data) {
     {
       method: "POST",
 
-      headers: {
+      headers: await withCsrfHeader({
         "Content-Type": "application/json",
-      },
+      }),
 
       credentials: "include",
 
@@ -73,9 +87,9 @@ export async function register(data) {
     {
       method: "POST",
 
-      headers: {
+      headers: await withCsrfHeader({
         "Content-Type": "application/json",
-      },
+      }),
 
       credentials: "include",
 
@@ -136,6 +150,8 @@ export async function logout() {
     {
       method: "POST",
 
+      headers: await withCsrfHeader(),
+
       credentials: "include",
     },
   );
@@ -143,4 +159,6 @@ export async function logout() {
   if (!response.ok) {
     await readErrorResponse(response, "登出失敗");
   }
+
+  resetCsrfToken();
 }

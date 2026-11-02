@@ -3,6 +3,7 @@ package com.project.sneakermarket.member.controller;
 import com.project.sneakermarket.member.dto.LoginRequest;
 import com.project.sneakermarket.member.dto.MemberResponse;
 import com.project.sneakermarket.member.service.MemberService;
+import com.project.sneakermarket.common.security.InMemoryRequestRateLimiter;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -13,6 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.web.csrf.CsrfToken;
+
+import java.time.Duration;
+import java.util.Map;
 
 
 @RestController
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final MemberService memberService;
+    private final InMemoryRequestRateLimiter rateLimiter;
 
 
     // =====================================================
@@ -39,6 +45,12 @@ public class AuthController {
 
             HttpServletRequest httpRequest) {
 
+        rateLimiter.check(
+                "login",
+                httpRequest.getRemoteAddr(),
+                10,
+                Duration.ofMinutes(5)
+        );
 
         MemberResponse member =
                 memberService.login(
@@ -49,6 +61,9 @@ public class AuthController {
         HttpSession session =
                 httpRequest.getSession(true);
 
+        // 登入成功後旋轉 Session ID，避免 Session fixation。
+        httpRequest.changeSessionId();
+
 
         session.setAttribute(
                 "memberId",
@@ -58,6 +73,14 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 member
+        );
+    }
+
+    @GetMapping("/csrf")
+    public Map<String, String> csrf(CsrfToken csrfToken) {
+        return Map.of(
+                "headerName", csrfToken.getHeaderName(),
+                "token", csrfToken.getToken()
         );
     }
 

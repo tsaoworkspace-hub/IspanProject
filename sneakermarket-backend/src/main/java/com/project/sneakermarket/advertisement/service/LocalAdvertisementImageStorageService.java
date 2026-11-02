@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.sneakermarket.common.exception.BusinessException;
+import com.project.sneakermarket.common.security.ImageUploadValidator;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -201,6 +202,7 @@ public class LocalAdvertisementImageStorageService implements AdvertisementImage
             );
         }
 
+        ImageUploadValidator.validate(file, extension);
         validateImageDimensions(file, adPlacement);
 
         String storedFileName =

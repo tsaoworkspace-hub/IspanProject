@@ -4,6 +4,8 @@ import com.project.sneakermarket.calendar.dto.CalendarEventDTO;
 import com.project.sneakermarket.calendar.entity.CalendarEvent;
 import com.project.sneakermarket.calendar.repository.CalendarEventRepository;
 import com.project.sneakermarket.calendar.service.CalendarEventService;
+import com.project.sneakermarket.common.security.SessionAuthorizationService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,6 +28,8 @@ public class CalendarEventController {
     @Autowired
     private CalendarEventRepository calendarEventRepo;
 
+    @Autowired
+    private SessionAuthorizationService authorizationService;
 
 
 
@@ -33,8 +37,10 @@ public class CalendarEventController {
     public ResponseEntity<CalendarEvent> createEvent(
             @Valid
             @RequestBody
-            CalendarEventDTO request
+            CalendarEventDTO request,
+            HttpServletRequest httpRequest
     ) {
+        authorizationService.requireAdmin(httpRequest);
         CalendarEvent created =
                 calendarEventService.createEvent(
                         request
@@ -53,8 +59,10 @@ public class CalendarEventController {
 
             @Valid
             @RequestBody
-            CalendarEventDTO request
+            CalendarEventDTO request,
+            HttpServletRequest httpRequest
     ) {
+        authorizationService.requireAdmin(httpRequest);
         calendarEventService.updateEventById(
                 eventId,
                 request
@@ -68,7 +76,10 @@ public class CalendarEventController {
 
 
     @DeleteMapping("/api/calendar/eventDelete")
-    public ResponseEntity<?> deleteEvent(@RequestParam Long eventId){
+    public ResponseEntity<?> deleteEvent(
+            @RequestParam Long eventId,
+            HttpServletRequest httpRequest){
+        authorizationService.requireAdmin(httpRequest);
         calendarEventService.cancelEventById(eventId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -90,7 +101,6 @@ public class CalendarEventController {
         return ResponseEntity.ok(events);
     }
 
-    @CrossOrigin
     @GetMapping("/api/calendar/event/{id}/photo")
     public ResponseEntity<byte[]> getEventPhoto(@PathVariable Long id) {
         Optional<CalendarEvent> op = calendarEventRepo.findById(id); // 或透過 service 找

@@ -43,10 +43,9 @@ CREATE TABLE dbo.members (
 VALUES
 (
     'test001',
-    'test001@gmail.com',
+    'test001@example.com',
     N'測試會員',
     'test_password_hash',
-    '0912345678',
+    '0900000000',
     'ROLE_MEMBER'
 );
-   

@@ -214,51 +214,41 @@ function initMap() {
 
     // Popup
     const popupContent = document.createElement('div')
+    popupContent.style.minWidth = '220px'
 
-    popupContent.innerHTML = `
-      <div style="min-width: 220px;">
+    const title = document.createElement('strong')
+    title.textContent = `7-ELEVEN ${store.storeName || ''}`
 
-        <strong>
-          7-ELEVEN ${store.storeName}
-        </strong>
+    const address = document.createElement('span')
+    address.textContent = `地址：${store.address || '無資料'}`
 
-        <br><br>
+    const phone = document.createElement('span')
+    phone.textContent = `電話：${store.phone || '無資料'}`
 
-        <span>
-          地址：${store.address}
-        </span>
-
-        <br>
-
-        <span>
-          電話：${store.phone || '無資料'}
-        </span>
-
-        <br><br>
-
-        <button
-          class="store-select-button"
-          style="
-            width: 100%;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            background: #198754;
-            color: white;
-            cursor: pointer;
-          "
-        >
-          選擇此門市
-        </button>
-
-      </div>
+    const button = document.createElement('button')
+    button.className = 'store-select-button'
+    button.textContent = '選擇此門市'
+    button.style.cssText = `
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      background: #198754;
+      color: white;
+      cursor: pointer;
     `
 
-
-    const button =
-      popupContent.querySelector(
-        '.store-select-button'
-      )
+    popupContent.append(
+      title,
+      document.createElement('br'),
+      document.createElement('br'),
+      address,
+      document.createElement('br'),
+      phone,
+      document.createElement('br'),
+      document.createElement('br'),
+      button,
+    )
 
 
     button.addEventListener(

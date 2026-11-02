@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.sneakermarket.common.exception.BusinessException;
+import com.project.sneakermarket.common.security.ImageUploadValidator;
 
 /**
  * 競標商品本機圖片儲存服務。
@@ -75,6 +76,8 @@ public class LocalImageStorageService implements ImageStorageService {
                     "圖片格式僅支援 JPG、JPEG、PNG、WEBP"
             );
         }
+
+        ImageUploadValidator.validate(file, extension);
 
         // 不直接使用使用者原始檔名，避免撞名與特殊路徑問題。
         String storedFileName =

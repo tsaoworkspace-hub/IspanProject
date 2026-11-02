@@ -1,5 +1,7 @@
 package com.project.sneakermarket.commerce.logistics;
 
+import com.project.sneakermarket.common.security.SessionAuthorizationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,13 +14,16 @@ public class CvsStoreController {
 
     private final CvsStoreImportService cvsStoreImportService;
     private final CvsStoreRepository cvsStoreRepository;
+    private final SessionAuthorizationService authorizationService;
 
     /**
      * 一次匯入全台 22 個縣市，
      * 每個縣市最多 20 間 7-ELEVEN。
      */
-    @GetMapping("/import/all")
-    public String importAllTaiwanStores() {
+    @PostMapping("/import/all")
+    public String importAllTaiwanStores(HttpServletRequest request) {
+
+        authorizationService.requireAdmin(request);
 
         int count =
                 cvsStoreImportService.importAllTaiwanStores();

@@ -13,7 +13,9 @@ import com.project.sneakermarket.advertisement.entity.AdvertisementStatus;
 import com.project.sneakermarket.advertisement.service.AdvertisementService;
 import com.project.sneakermarket.advertisement.service.AdvertisementStatsService;
 import com.project.sneakermarket.common.response.ApiResponse;
+import com.project.sneakermarket.common.security.SessionAuthorizationService;
 import com.project.sneakermarket.advertisement.dto.AdvertisementDashboardSummaryResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,9 +35,14 @@ public class AdvertisementController {
     private final AdvertisementService adService;
     private final AdvertisementImageStorageService adImageService;
     private final AdvertisementStatsService adStatsService;
+    private final SessionAuthorizationService authorizationService;
 
     @PostMapping("/add")
-    public ResponseEntity<ApiResponse<Long>> insertAdvertisement(@Valid @RequestBody CreateAdvertisementRequest request) {
+    public ResponseEntity<ApiResponse<Long>> insertAdvertisement(
+            @Valid @RequestBody CreateAdvertisementRequest request,
+            HttpServletRequest httpRequest) {
+
+        authorizationService.requireAdmin(httpRequest);
 
         Advertisement advertisement = adService.insertAdvertisement(request);
 
@@ -46,7 +53,10 @@ public class AdvertisementController {
     @PostMapping("/upload-image")
     public ResponseEntity<ApiResponse<String>> uploadAdvertisementImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("adPlacement") AdvertisementPlacement adPlacement) {
+            @RequestParam("adPlacement") AdvertisementPlacement adPlacement,
+            HttpServletRequest httpRequest) {
+
+        authorizationService.requireAdmin(httpRequest);
 
         String imageUrl = adImageService.store(file, adPlacement);
 
@@ -55,7 +65,9 @@ public class AdvertisementController {
     }
 
     @GetMapping("/findAll")
-    public ResponseEntity<ApiResponse<List<AdvertisementResponse>>> getAllAdvertisements() {
+    public ResponseEntity<ApiResponse<List<AdvertisementResponse>>> getAllAdvertisements(
+            HttpServletRequest httpRequest) {
+        authorizationService.requireAdmin(httpRequest);
         List<AdvertisementResponse> advertisements = adService.getAllAdvertisements();
 
         return ResponseEntity.ok(
@@ -64,7 +76,10 @@ public class AdvertisementController {
     }
 
     @DeleteMapping("/delete/{adId}")
-    public ResponseEntity<ApiResponse<Void>> deleteAdvertisement(@PathVariable Long adId) {
+    public ResponseEntity<ApiResponse<Void>> deleteAdvertisement(
+            @PathVariable Long adId,
+            HttpServletRequest httpRequest) {
+        authorizationService.requireAdmin(httpRequest);
         adService.deleteAdvertisement(adId);
 
         return ResponseEntity.ok(ApiResponse.ok("廣告刪除成功",null));
@@ -74,7 +89,9 @@ public class AdvertisementController {
     @PutMapping("/put/{adId}")
     public ResponseEntity<ApiResponse<Long>> updateAdvertisement(
                 @PathVariable Long adId,
-                @Valid @RequestBody UpdateAdvertisementRequest request){
+                @Valid @RequestBody UpdateAdvertisementRequest request,
+                HttpServletRequest httpRequest){
+            authorizationService.requireAdmin(httpRequest);
             Advertisement advertisement = adService.updateAdvertisement(adId,request);
 
             return ResponseEntity.ok(ApiResponse.ok("廣告修改成功", advertisement.getAdId()));
@@ -86,7 +103,10 @@ public class AdvertisementController {
             @RequestParam(required = false) AdvertisementStatus adStatus,
             @RequestParam(required = false) AdvertisementDeliveryStatus deliveryStatus,
             @RequestParam(required = false) AdvertisementPlacement adPlacement,
-            @RequestParam(required = false) String keyword){
+            @RequestParam(required = false) String keyword,
+            HttpServletRequest httpRequest){
+
+        authorizationService.requireAdmin(httpRequest);
 
         Page<AdvertisementResponse> result =
                 adService.findAdByPage(pageNumber, adStatus, deliveryStatus, adPlacement, keyword);
@@ -98,7 +118,10 @@ public class AdvertisementController {
 
     @PutMapping("/put/{adId}/status")
     public ResponseEntity<ApiResponse<AdvertisementResponse>> updateAdvertisementStatus(
-            @PathVariable Long adId, @Valid @RequestBody UpdateAdvertisementStatusRequest request){
+            @PathVariable Long adId,
+            @Valid @RequestBody UpdateAdvertisementStatusRequest request,
+            HttpServletRequest httpRequest){
+        authorizationService.requireAdmin(httpRequest);
         AdvertisementResponse adResponse = adService.updateAdvertisementStatus(adId, request);
 
         return ResponseEntity.ok(ApiResponse.ok("廣告狀態更新成功",adResponse));
@@ -119,8 +142,10 @@ public class AdvertisementController {
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<List<AdvertisementStatsResponse>>>
     getAdvertisementStats(
-            @RequestParam("adIds") List<Long> adIds
+            @RequestParam("adIds") List<Long> adIds,
+            HttpServletRequest httpRequest
     ) {
+        authorizationService.requireAdmin(httpRequest);
         List<AdvertisementStatsResponse> stats =
                 adStatsService.getTotalsByAdvertisementIds(adIds);
 
@@ -131,7 +156,8 @@ public class AdvertisementController {
 
     @GetMapping("/dashboard-summary")
     public ResponseEntity<ApiResponse<AdvertisementDashboardSummaryResponse>>
-    getAdvertisementDashboardSummary() {
+    getAdvertisementDashboardSummary(HttpServletRequest httpRequest) {
+        authorizationService.requireAdmin(httpRequest);
         AdvertisementDashboardSummaryResponse summary =
                 adStatsService.getDashboardSummary();
 

@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.util.HtmlUtils;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -66,10 +69,15 @@ public class PaymentController {
 
         StringBuilder html = new StringBuilder();
         html.append("<html><body onload=\"document.forms[0].submit()\">");
-        html.append("<form method=\"post\" action=\"").append(aioCheckoutUrl).append("\">");
+        html.append("<form method=\"post\" action=\"")
+                .append(HtmlUtils.htmlEscape(aioCheckoutUrl))
+                .append("\">");
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            html.append("<input type=\"hidden\" name=\"").append(entry.getKey())
-                    .append("\" value=\"").append(entry.getValue()).append("\">");
+            html.append("<input type=\"hidden\" name=\"")
+                    .append(HtmlUtils.htmlEscape(entry.getKey()))
+                    .append("\" value=\"")
+                    .append(HtmlUtils.htmlEscape(entry.getValue()))
+                    .append("\">");
         }
         html.append("</form></body></html>");
 
@@ -78,11 +86,13 @@ public class PaymentController {
 
     @PostMapping("/api/payment/notify")
     public String notify(@RequestParam Map<String, String> allParams) {
-        System.out.println(allParams);
         String receivedCheckMacValue = allParams.get("CheckMacValue");
         String computed = ECPayCheckMacValueUtil.generate(allParams, hashKey, hashIv);
 
-        if (!computed.equals(receivedCheckMacValue)) {
+        if (receivedCheckMacValue == null
+                || !MessageDigest.isEqual(
+                computed.getBytes(StandardCharsets.US_ASCII),
+                receivedCheckMacValue.getBytes(StandardCharsets.US_ASCII))) {
             return "0|CheckMacValue Error";
         }
 

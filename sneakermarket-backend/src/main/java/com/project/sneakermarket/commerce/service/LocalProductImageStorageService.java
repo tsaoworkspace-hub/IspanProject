@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.sneakermarket.common.exception.BusinessException;
+import com.project.sneakermarket.common.security.ImageUploadValidator;
 
 @Service
 public class LocalProductImageStorageService implements ProductImageStorageService {
@@ -44,6 +45,8 @@ public class LocalProductImageStorageService implements ProductImageStorageServi
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new BusinessException("圖片格式僅支援 JPG、JPEG、PNG、WEBP");
         }
+
+        ImageUploadValidator.validate(file, extension);
 
         String storedFileName = UUID.randomUUID() + "." + extension;
 

@@ -6,26 +6,25 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 @Configuration
 public class SecurityConfig {
 
-    /**
-     * BASE 開發階段先開放所有 API，讓各模組可以平行開發。
-     *
-     * 專案目前採用 HttpSession 保存登入會員狀態，
-     * 因此允許 Spring 在需要時建立與使用 Session。
-     *
-     * 後續會員模組完成登入與角色權限後，
-     * 再補上 MEMBER / ADMIN 等正式授權規則。
-     */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        HttpSessionCsrfTokenRepository csrfTokenRepository =
+                new HttpSessionCsrfTokenRepository();
+        csrfTokenRepository.setHeaderName("X-CSRF-TOKEN");
+
         return http
-                // 目前前後端開發階段先停用 CSRF，
-                // 正式部署若使用 Session Cookie，需再評估 CSRF 防護策略。
-                .csrf(csrf -> csrf.disable())
+                // Session Cookie 架構必須使用 CSRF Token。只有第三方金流
+                // Server-to-Server 回呼無法取得 Token，因此以簽章驗證取代。
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfTokenRepository)
+                        .ignoringRequestMatchers("/api/payment/notify")
+                )
 
                 // 使用既有 CorsConfig
                 .cors(Customizer.withDefaults())
@@ -37,7 +36,9 @@ public class SecurityConfig {
                         )
                 )
 
-                // BASE 階段仍先開放所有請求。
+                // 專案使用自訂 HttpSession memberId，而非 Spring
+                // Authentication；會員與管理員授權由各 API 的共用
+                // SessionAuthorizationService 執行。
                 .authorizeHttpRequests(auth ->
                         auth.anyRequest().permitAll()
                 )
