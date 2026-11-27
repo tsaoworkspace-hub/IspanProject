@@ -8,6 +8,35 @@
 
 這是我的求職作品版本。原專案由五人團隊共同開發；我主要負責行事曆、通知、Google Calendar 整合、地圖功能及相關管理後台，並參與跨模組整合、品牌介面與營運 Dashboard。完整 Commit History 保留所有團隊成員的實際貢獻。
 
+## 畫面預覽
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/calendar-overview.png" alt="活動行事曆與活動探索畫面" width="100%">
+      <br>
+      <sub><b>活動探索與個人行事曆</b>｜依月份、分類瀏覽活動並管理關注行程</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/event-map.png" alt="台灣活動地圖畫面" width="100%">
+      <br>
+      <sub><b>活動地圖</b>｜以互動式地圖查看各地球鞋活動</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/admin-notifications.png" alt="管理後台通知中心畫面" width="100%">
+      <br>
+      <sub><b>通知中心</b>｜建立、篩選與追蹤多通路通知</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/admin-events.png" alt="管理後台活動管理畫面" width="100%">
+      <br>
+      <sub><b>活動管理後台</b>｜管理活動狀態、分類與發佈流程</sub>
+    </td>
+  </tr>
+</table>
+
 ## 我的主要貢獻
 
 - 設計並實作活動行事曆、會員關注與站內通知流程。
